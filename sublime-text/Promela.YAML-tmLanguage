@@ -1,0 +1,160 @@
+# [PackageDev] target_format: plist, ext: tmLanguage
+---
+name: Promela
+scopeName: source.promela
+fileTypes: [pml]
+uuid: 21ff38f5-30bb-4c0d-a60c-cf961243b5a0
+
+patterns:
+-   include: '#core'
+
+repository:
+    core:
+        patterns:
+        - include: '#keywords'
+        - include: '#comments'
+        - include: '#defines'
+        - include: '#numbers'
+        - include: '#operators'
+        - include: '#modifiers'
+        - include: '#types'
+        - include: '#control-flow'
+        - include: '#uppercase-id'
+        - include: '#string'
+        - include: '#functions'
+        - include: '#id'
+    keywords:
+        patterns:
+        - include: '#keyword-meta'
+    keyword-meta:
+        name:   keyword.other.promela
+        match:  (\b(false|inline|ltl|select|skip|true)\b)
+    comments:
+        patterns:
+        - include: '#comment-line'
+        - include: '#comment-block'
+    comment-line:
+        name:   comment.line.double-slash.promela
+        begin:  \s*//
+        end:    (?<=^|[^\\])\s*(?=\n)$\n?
+    comment-block:
+        name:   comment.block.promela
+        begin:  \s*/\*
+        end:    \*/
+        patterns:
+        - include: '#runspin'
+    runspin:
+        name:   string.promela
+        begin:  (?:\b(runspin[_a-zA-z0-9-]*):)
+        end:    ($|\%\s*\*\/)
+        endCaptures:
+            '0':
+                name:   comment.block.promela
+        patterns:
+        -
+            name:   keyword.other.promela
+            match:  (%(\./)?[a-z./0-9-]+\b)
+        -
+            name:   variable.parameter.promela
+            match:  (\s-[A-Za-z0-9_]+)
+        -
+            name:   entity.parameter.promela
+            match:  (=[A-Za-z0-9_]+)
+
+    defines:
+        patterns:
+        - include: '#define-normal'
+        - include: '#define-include'
+    define-normal:
+        # name:   meta.preprocessor.directive.promela
+        begin:  ^\s*(#)\s*(define|ifdef|ifndef|if|else|endif|undef)\b
+        beginCaptures:
+            '0':
+                name:   keyword.other.preprocessor.promela
+        end:    (?<=^|[^\\])\s*(?=\n)$\n?
+        patterns:
+        - include: '#core'
+    define-include:
+        name:   meta.preprocessor.include.promela
+        begin:  ^\s*(#)\s*(include)\b
+        beginCaptures:
+            '0':
+                name:   keyword.other.preprocessor.include.promela
+        end:    ("[^"]*?")
+        endCaptures:
+            '1':
+                name:   string.quoted.double.include.c
+        patterns:
+        - include: '#ppline-include-innards'
+    numbers:
+        name:   constant.numeric.integer.promela
+        match:  (\b([0-9]+)\b)
+    operators:
+        patterns:
+        - include: '#assign'
+        - include: '#comparison'
+        - include: '#crement'
+        - include: '#arith'
+        - include: '#send'
+        - include: '#bits'
+        - include: '#logic'
+        - include: '#flow'
+    assign:
+        name:   keyword.operator.assignment.promela
+        match:  (=)
+    comparison:
+        name:   keyword.operator.comparison.promela
+        match:  (==|!=|<=|>=|<|>)
+    crement:
+        name:   keyword.operator.increment-decrement.promela
+        match:  (\-\-|\+\+)
+    send:
+        name:   keyword.operator.send-receive.promela
+        match:  (\?|!)
+    arith:
+        name:   keyword.operator.arithmetic.promela
+        match:  (\-|\+|\*|\/|%)
+    logic:
+        name:   keyword.operator.logical.promela
+        match:  (&&|\|\|)
+    bits:
+        name:   keyword.operator.bitwise.promela
+        match:  (~|&|\||\^|<<|>>)
+    flow:
+        name:   keyword.operator.flow.promela
+        match:  (->|;|::|:|\.\.)
+    modifiers:
+        name:   entity.modifier.promela
+        match:  (\b(active|pid|hidden|init|local|never|notrace|priority|proctype|D_proctype|provided|show|trace|typedef|xr|xs)\b)
+    types:
+        name:   storage.type.promela
+        match:  (\b(chan|bit|bool|byte|short|int|unsigned|mtype|[a-z_]+_t)\b)
+    control-flow:
+        name:   keyword.control.promela
+        match:  (\b(atomic|break|d_step|do|od|for|goto|if|fi|unless|else)\b)
+    uppercase-id:
+        name:   variable.parameter.promela
+        match: (\b[A-Z_]+\b)
+    id:
+        name:   other.name.variable.promela
+        match: (\b[A-Za-z_]+\b)
+    string:
+        name:   string.quoted.double.promela
+        begin: '"'
+        beginCaptures:
+            '0':
+                name:   punctuation.definition.string.begin.c
+        end:    (")|(?<=^|[^\\])\s*(\n)
+        endCaptures:
+            '1':
+                name:   punctuation.definition.string.end.c
+            '2':
+                name:   invalid.illegal.unexpected-end-of-line.c
+        patterns:
+        - include: '#string-placeholder'
+    string-placeholder:
+        name:   constant.other.placeholder.promela
+        match:  (%[cdeoux])
+    functions:
+        name:   entity.name.function.promela
+        match:  (\b(assert|printf|printm|empty|nempty|full|nfull)\b)
